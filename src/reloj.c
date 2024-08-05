@@ -20,25 +20,38 @@ void Reloj_getTiempo(TiempoBcd *destino)
     for (int i=0;i<TiempoBcd_NUM_DIGITOS;++i) (*destino)[i]=self->tiempo[i];
 }
 
+/**
+ * @brief Incrementa un dígito, is pasa del límite establecido vuelve a cero
+ * 
+ * @param digito[in,out] Referencia del dígito a incrementar
+ * @param limite[in] El límite
+ * @param incremento[in] el valor por el cual incrementar
+ * @retval 1 si hubo rebalse, el dígito pasó a cero
+ * @retval 0 si no hubo rebase
+ */
+static uint8_t incrementaDigito(
+                        uint8_t *const digito,
+                        uint8_t const limite,
+                        uint8_t const incremento)
+{
+    uint8_t rebalse = 0;
+    if (*digito < limite) {
+        *digito += incremento;
+    }else{
+        *digito = 0;
+        rebalse = 1;
+    }
+    return rebalse;
+}
 
 void Reloj_tick(void)
 {
-        self->tiempo[UNIDAD_SEGUNDO]++;
-    if (self->tiempo[UNIDAD_SEGUNDO] > 9){
-        self->tiempo[UNIDAD_SEGUNDO] = 0;
-
-        self->tiempo[DECENA_SEGUNDO]++;
-        if (self->tiempo[DECENA_SEGUNDO] > 5){
-            self->tiempo[DECENA_SEGUNDO] = 0;
-
-            self->tiempo[UNIDAD_MINUTO]++;
-            if (self->tiempo[UNIDAD_MINUTO] > 9){
-                self->tiempo[UNIDAD_MINUTO] = 0;
-                
-                self->tiempo[DECENA_MINUTO] ++;
-            }
-        }
-    }
+    uint8_t acarreo;
+    acarreo = incrementaDigito(self->tiempo+UNIDAD_SEGUNDO,9,1);
+    acarreo = incrementaDigito(self->tiempo+DECENA_SEGUNDO,5,acarreo);
+    acarreo = incrementaDigito(self->tiempo+UNIDAD_MINUTO ,9,acarreo);
+    acarreo = incrementaDigito(self->tiempo+DECENA_MINUTO ,5,acarreo);
+    acarreo = incrementaDigito(self->tiempo+UNIDAD_HORA   ,9,acarreo);
 }
 
 bool Reloj_setTiempo(const TiempoBcd *horaActual)

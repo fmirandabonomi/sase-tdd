@@ -61,6 +61,7 @@ void test_avanzaFronteras(void)
         {.inicial = {1,3,0,0,3,9}, .final = {1,3,0,0,4,0}, .mensaje = "A 13:00:39 le sigue 13:00:40"},
         {.inicial = {1,3,0,0,5,9}, .final = {1,3,0,1,0,0}, .mensaje = "A 13:00:59 le sigue 13:01:00"},
         {.inicial = {1,3,0,9,5,9}, .final = {1,3,1,0,0,0}, .mensaje = "A 13:09:59 le sigue 13:10:00"},
+        {.inicial = {1,3,5,9,5,9}, .final = {1,4,0,0,0,0}, .mensaje = "A 13:59:59 le sigue 14:00:00"},
     };
     const size_t numCasos = sizeof(tablaCasos)/sizeof(*tablaCasos);
     enum{TICKS_POR_SEGUNDO = 1};
