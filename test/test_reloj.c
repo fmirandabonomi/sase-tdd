@@ -15,3 +15,12 @@ void test_alInicioHoraCero(void)
     Reloj_getTiempo(&tiempo);
     TEST_ASSERT_EQUAL_UINT8_ARRAY((TiempoBcd){},tiempo,TiempoBcd_NUM_DIGITOS);
 }
+void test_laHoraInvalidaDebeAvanzar(void)
+{
+    TiempoBcd tiempo;
+    unsigned ticksPorSegundo = 1;
+    Reloj_init(ticksPorSegundo);
+    Reloj_tick();
+    Reloj_getTiempo(&tiempo);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY((TiempoBcd){[UNIDAD_SEGUNDO]=1},tiempo,TiempoBcd_NUM_DIGITOS);
+}

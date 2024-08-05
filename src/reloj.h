@@ -35,4 +35,9 @@ bool Reloj_getTiempoEsValido();
  */
 void Reloj_getTiempo(TiempoBcd *destino);
 
+/**
+ * @brief Procesa un tick del reloj
+ * 
+ */
+void Reloj_tick(void);
 #endif // RELOJ_H
