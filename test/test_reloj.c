@@ -49,3 +49,16 @@ void test_avanzaUnSegundo(void)
     Reloj_getTiempo(&tiempo);
     TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(tiempoFinal,tiempo,TiempoBcd_NUM_DIGITOS,"Debe avanzar");
 }
+
+void test_avanzaFronteraDecenaDeSegundo(void)
+{
+    static const TiempoBcd tiempoInicial = {1,3,0,0,3,9};
+    static const TiempoBcd tiempoFinal = {1,3,0,0,4,0};
+    TiempoBcd tiempo;
+    unsigned ticksPorSegundo = 1;
+    Reloj_init(ticksPorSegundo);
+    Reloj_setTiempo(&tiempoInicial);
+    Reloj_tick();
+    Reloj_getTiempo(&tiempo);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(tiempoFinal,tiempo,TiempoBcd_NUM_DIGITOS,"A las 9 unidades le sigue una decena");
+}

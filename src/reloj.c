@@ -22,7 +22,12 @@ void Reloj_getTiempo(TiempoBcd *destino)
 
 void Reloj_tick(void)
 {
-    self->tiempo[UNIDAD_SEGUNDO]++;   
+    if (self->tiempo[UNIDAD_SEGUNDO] < 9){
+        self->tiempo[UNIDAD_SEGUNDO]++;
+    }else{
+        self->tiempo[UNIDAD_SEGUNDO] = 0;
+        self->tiempo[DECENA_SEGUNDO]++;
+    }
 }
 
 bool Reloj_setTiempo(const TiempoBcd *horaActual)
