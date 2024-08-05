@@ -62,3 +62,7 @@ bool Reloj_setTiempo(const TiempoBcd *horaActual)
     return true;
 }
 
+bool Reloj_getAlarmaActivada(void)
+{
+    return false;
+}

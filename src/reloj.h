@@ -49,4 +49,12 @@ void Reloj_tick(void);
  * @retval false si hubo un error al poner la hora
  */
 bool Reloj_setTiempo(const TiempoBcd *horaActual);
+
+/**
+ * @brief Consulta si la alarma está activada
+ * 
+ * @retval true Alarma activada
+ * @retval false Alarma desactivada
+ */
+bool Reloj_getAlarmaActivada(void);
 #endif // RELOJ_H

@@ -1,26 +1,29 @@
 #include "unity.h"
 #include "reloj.h"
 
+enum{TICKS_POR_SEGUNDO = 1};
+
+void setUp(void){
+    Reloj_init(TICKS_POR_SEGUNDO);
+}
+static void avanzaUnSegundo(void)
+{
+    for (int i=0;i<TICKS_POR_SEGUNDO;++i) Reloj_tick();
+}
 void test_alInicioHoraNoValida(void)
 {
-    unsigned ticksPorSegundo = 1;
-    Reloj_init(ticksPorSegundo);
     TEST_ASSERT_FALSE_MESSAGE(Reloj_getTiempoEsValido(),"TiempoValido debe ser false");
 }
 void test_alInicioHoraCero(void)
 {
     TiempoBcd tiempo = {1,1,1,1,1,1};
-    unsigned ticksPorSegundo = 1;
-    Reloj_init(ticksPorSegundo);
     Reloj_getTiempo(&tiempo);
     TEST_ASSERT_EQUAL_UINT8_ARRAY((TiempoBcd){},tiempo,TiempoBcd_NUM_DIGITOS);
 }
 void test_laHoraInvalidaDebeAvanzar(void)
 {
     TiempoBcd tiempo;
-    unsigned ticksPorSegundo = 1;
-    Reloj_init(ticksPorSegundo);
-    Reloj_tick();
+    avanzaUnSegundo();
     Reloj_getTiempo(&tiempo);
     TEST_ASSERT_EQUAL_UINT8_ARRAY((TiempoBcd){[UNIDAD_SEGUNDO]=1},tiempo,TiempoBcd_NUM_DIGITOS);
 }
@@ -28,8 +31,6 @@ void test_puedePonerseEnHora(void)
 {
     static const TiempoBcd tiempoSet = {1,3,0,0,3,4};
     TiempoBcd tiempo;
-    unsigned ticksPorSegundo = 1;
-    Reloj_init(ticksPorSegundo);
     TEST_ASSERT_TRUE(Reloj_setTiempo(&tiempoSet));
     TEST_ASSERT_TRUE_MESSAGE(Reloj_getTiempoEsValido(),"Luego de poner en hora el tiempo debe ser valido");
     Reloj_getTiempo(&tiempo);
@@ -42,10 +43,8 @@ void test_avanzaUnSegundo(void)
     static const TiempoBcd tiempoInicial = {1,3,0,0,3,4};
     static const TiempoBcd tiempoFinal = {1,3,0,0,3,5};
     TiempoBcd tiempo;
-    unsigned ticksPorSegundo = 1;
-    Reloj_init(ticksPorSegundo);
     Reloj_setTiempo(&tiempoInicial);
-    Reloj_tick();
+    avanzaUnSegundo();
     TEST_ASSERT_TRUE_MESSAGE(Reloj_getTiempoEsValido(),"Al avanzar el tiempo sigue siendo valido");
     Reloj_getTiempo(&tiempo);
     TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(tiempoFinal,tiempo,TiempoBcd_NUM_DIGITOS,"Debe avanzar");
@@ -66,16 +65,18 @@ void test_avanzaFronteras(void)
         {.inicial = {2,3,5,9,5,9}, .final = {0,0,0,0,0,0}, .mensaje = "A 23:59:59 le sigue 00:00:00"},
     };
     const size_t numCasos = sizeof(tablaCasos)/sizeof(*tablaCasos);
-    enum{TICKS_POR_SEGUNDO = 1};
     TiempoBcd tiempo;
-
-    Reloj_init(TICKS_POR_SEGUNDO);
 
     for(size_t i=0;i<numCasos;++i){
         const struct Caso *const caso = tablaCasos + i;
         Reloj_setTiempo(&caso->inicial);
-        Reloj_tick();
+        avanzaUnSegundo();
         Reloj_getTiempo(&tiempo);
         TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(caso->final,tiempo,TiempoBcd_NUM_DIGITOS,caso->mensaje);
     }
+}
+
+void test_alarmaIniciaDesactivada(void)
+{
+    TEST_ASSERT_FALSE_MESSAGE(Reloj_getAlarmaActivada(),"Al inicio la alarma debe estar desactivada");
 }
