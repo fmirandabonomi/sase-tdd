@@ -52,7 +52,7 @@ void Reloj_tick(void)
     acarreo = incrementaDigito(self->tiempo+UNIDAD_MINUTO ,9,acarreo);
     acarreo = incrementaDigito(self->tiempo+DECENA_MINUTO ,5,acarreo);
     acarreo = incrementaDigito(self->tiempo+UNIDAD_HORA   ,self->tiempo[DECENA_HORA] < 2 ? 9:3,acarreo);
-    acarreo = incrementaDigito(self->tiempo+DECENA_HORA   ,2,acarreo);
+    (void) incrementaDigito(self->tiempo+DECENA_HORA   ,2,acarreo);
 }
 
 bool Reloj_setTiempo(const TiempoBcd *horaActual)
