@@ -40,4 +40,13 @@ void Reloj_getTiempo(TiempoBcd *destino);
  * 
  */
 void Reloj_tick(void);
+
+/**
+ * @brief Pone el reloj en hora
+ * 
+ * @param horaActual La hora actual
+ * @retval true si puso la hora indicada
+ * @retval false si hubo un error al poner la hora
+ */
+bool Reloj_setTiempo(const TiempoBcd *horaActual);
 #endif // RELOJ_H
