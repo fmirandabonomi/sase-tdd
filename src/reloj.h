@@ -57,4 +57,6 @@ bool Reloj_setTiempo(const TiempoBcd *horaActual);
  * @retval false Alarma desactivada
  */
 bool Reloj_getAlarmaActivada(void);
+
+bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo);
 #endif // RELOJ_H

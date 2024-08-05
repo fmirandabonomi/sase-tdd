@@ -3,6 +3,7 @@
 static struct Reloj{
     TiempoBcd tiempo;
     bool esValido;
+    bool alarmaActivada;
 }self[1];
 
 void Reloj_init(unsigned ticksPorSegundo)
@@ -64,5 +65,12 @@ bool Reloj_setTiempo(const TiempoBcd *horaActual)
 
 bool Reloj_getAlarmaActivada(void)
 {
-    return false;
+    return self->alarmaActivada;
+}
+
+bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo)
+{
+    (void)tiempo;
+    self->alarmaActivada = true;
+    return true;
 }

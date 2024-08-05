@@ -80,3 +80,11 @@ void test_alarmaIniciaDesactivada(void)
 {
     TEST_ASSERT_FALSE_MESSAGE(Reloj_getAlarmaActivada(),"Al inicio la alarma debe estar desactivada");
 }
+
+void test_activaAlarmaAlEstablecerTiempoDeAlarma(void)
+{
+    static const TiempoBcd tiempo = {1,3,0,0,0,1};
+
+    TEST_ASSERT_TRUE_MESSAGE(Reloj_setTiempoAlarma(&tiempo),"Debe poder establecer un tiempo válido de alarma");
+    TEST_ASSERT_TRUE_MESSAGE(Reloj_getAlarmaActivada(),"Al establecer el tiempo de alarma esta debe activarse");
+}
