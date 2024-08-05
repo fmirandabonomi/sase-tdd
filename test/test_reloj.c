@@ -113,3 +113,16 @@ void test_laAlarmaSeEjecutaAlLlegarAlTiempoDeAlarma(void)
     TEST_ASSERT_EQUAL_UINT_MESSAGE(1,AccionAlarma_vecesDisparada(testigoAlarma),"La alarma se dispara al llegar la hora establecida");
 
 }
+
+void test_laAlarmaDesactiadaNoSeEjecutaAlLlegarAlTiempoDeAlarma(void)
+{
+    static const TiempoBcd tiempoAlarma = {1,3,0,0,0,1};
+    static const TiempoBcd tiempoInicial = {1,3,0,0,0,0};
+
+    Reloj_setTiempo(&tiempoInicial);
+    Reloj_setTiempoAlarma(&tiempoAlarma);
+    Reloj_desactivaAlarma();
+    avanzaUnSegundo();
+    TEST_ASSERT_EQUAL_UINT_MESSAGE(0,AccionAlarma_vecesDisparada(testigoAlarma),"La alarma desactivada no se dispara al llegar la hora establecida");
+
+}

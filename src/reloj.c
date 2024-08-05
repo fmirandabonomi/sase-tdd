@@ -94,3 +94,8 @@ bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo)
     self->alarmaActivada = true;
     return true;
 }
+
+void Reloj_desactivaAlarma(void)
+{
+    self->alarmaActivada = false;
+}

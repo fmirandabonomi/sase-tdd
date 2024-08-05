@@ -60,4 +60,6 @@ bool Reloj_setTiempo(const TiempoBcd *horaActual);
 bool Reloj_getAlarmaActivada(void);
 
 bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo);
+
+void Reloj_desactivaAlarma(void);
 #endif // RELOJ_H
