@@ -99,3 +99,8 @@ void Reloj_desactivaAlarma(void)
 {
     self->alarmaActivada = false;
 }
+
+void Reloj_activaAlarma(void)
+{
+    self->alarmaActivada = true;
+}

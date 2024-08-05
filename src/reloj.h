@@ -62,4 +62,7 @@ bool Reloj_getAlarmaActivada(void);
 bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo);
 
 void Reloj_desactivaAlarma(void);
+
+void Reloj_activaAlarma(void);
+
 #endif // RELOJ_H
