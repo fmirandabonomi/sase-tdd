@@ -35,3 +35,17 @@ void test_puedePonerseEnHora(void)
     Reloj_getTiempo(&tiempo);
     TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(tiempoSet,tiempo,TiempoBcd_NUM_DIGITOS,"El tiempo establecido debe reflejarse en el reloj");
 }
+
+void test_avanzaUnSegundo(void)
+{
+    static const TiempoBcd tiempoInicial = {1,3,0,0,3,4};
+    static const TiempoBcd tiempoFinal = {1,3,0,0,3,5};
+    TiempoBcd tiempo;
+    unsigned ticksPorSegundo = 1;
+    Reloj_init(ticksPorSegundo);
+    Reloj_setTiempo(&tiempoInicial);
+    Reloj_tick();
+    TEST_ASSERT_TRUE_MESSAGE(Reloj_getTiempoEsValido(),"Al avanzar el tiempo sigue siendo valido");
+    Reloj_getTiempo(&tiempo);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(tiempoFinal,tiempo,TiempoBcd_NUM_DIGITOS,"Debe avanzar");
+}
