@@ -1,10 +1,20 @@
 #include "unity.h"
+#include "accion.h"
 #include "reloj.h"
+#include "accion_alarma.h"
+
 
 enum{TICKS_POR_SEGUNDO = 1};
 
+static AccionAlarma *testigoAlarma;
+
 void setUp(void){
-    Reloj_init(TICKS_POR_SEGUNDO);
+    testigoAlarma = AccionAlarma_new();
+    Reloj_init(TICKS_POR_SEGUNDO,AccionAlarma_getAccion(testigoAlarma));
+}
+void tearDown(void)
+{
+    AccionAlarma_delete(testigoAlarma);
 }
 static void avanzaUnSegundo(void)
 {
@@ -83,8 +93,23 @@ void test_alarmaIniciaDesactivada(void)
 
 void test_activaAlarmaAlEstablecerTiempoDeAlarma(void)
 {
-    static const TiempoBcd tiempo = {1,3,0,0,0,1};
+    static const TiempoBcd tiempoAlarma = {1,3,0,0,0,1};
+    static const TiempoBcd tiempoInicial = {1,3,0,0,0,0};
 
-    TEST_ASSERT_TRUE_MESSAGE(Reloj_setTiempoAlarma(&tiempo),"Debe poder establecer un tiempo válido de alarma");
+    Reloj_setTiempo(&tiempoInicial);
+    TEST_ASSERT_TRUE_MESSAGE(Reloj_setTiempoAlarma(&tiempoAlarma),"Debe poder establecer un tiempo válido de alarma");
     TEST_ASSERT_TRUE_MESSAGE(Reloj_getAlarmaActivada(),"Al establecer el tiempo de alarma esta debe activarse");
+    TEST_ASSERT_EQUAL_UINT_MESSAGE(0,AccionAlarma_vecesDisparada(testigoAlarma),"La alarma no se dispara si no es la hora");
+}
+
+void test_laAlarmaSeEjecutaAlLlegarAlTiempoDeAlarma(void)
+{
+    static const TiempoBcd tiempoAlarma = {1,3,0,0,0,1};
+    static const TiempoBcd tiempoInicial = {1,3,0,0,0,0};
+
+    Reloj_setTiempo(&tiempoInicial);
+    Reloj_setTiempoAlarma(&tiempoAlarma);
+    avanzaUnSegundo();
+    TEST_ASSERT_EQUAL_UINT_MESSAGE(1,AccionAlarma_vecesDisparada(testigoAlarma),"La alarma se dispara al llegar la hora establecida");
+
 }

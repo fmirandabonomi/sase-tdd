@@ -2,6 +2,7 @@
 #define RELOJ_H
 #include <stdbool.h>
 #include <stdint.h>
+#include "accion.h"
 
 enum PartesTiempoBcd{
     DECENA_HORA,
@@ -20,7 +21,7 @@ typedef uint8_t TiempoBcd[TiempoBcd_NUM_DIGITOS];
  * 
  * @param ticksPorSegundo cantidad de ticks por segundo;
  */
-void Reloj_init(unsigned ticksPorSegundo);
+void Reloj_init(unsigned ticksPorSegundo,Accion *accionAlarma);
 /**
  * @brief Consulta si el tiempo del reloj es válido
  * 

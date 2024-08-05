@@ -2,13 +2,16 @@
 
 static struct Reloj{
     TiempoBcd tiempo;
+    TiempoBcd tiempoAlarma;
     bool esValido;
     bool alarmaActivada;
+    Accion *accionAlarma;
 }self[1];
 
-void Reloj_init(unsigned ticksPorSegundo)
+void Reloj_init(unsigned ticksPorSegundo,Accion *accionAlarma)
 {
     (void) ticksPorSegundo;
+    self->accionAlarma = accionAlarma;
 }
 
 bool Reloj_getTiempoEsValido(void)
@@ -45,6 +48,16 @@ static uint8_t incrementaDigito(
     return rebalse;
 }
 
+static bool Reloj_coincideAlarma()
+{
+    bool coincide = true;
+    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i){
+        const uint8_t a = self->tiempo[i];
+        const uint8_t b = self->tiempoAlarma[i];
+        coincide &= (a == b);
+    }
+    return coincide;
+}
 void Reloj_tick(void)
 {
     uint8_t acarreo;
@@ -54,6 +67,13 @@ void Reloj_tick(void)
     acarreo = incrementaDigito(self->tiempo+DECENA_MINUTO ,5,acarreo);
     acarreo = incrementaDigito(self->tiempo+UNIDAD_HORA   ,self->tiempo[DECENA_HORA] < 2 ? 9:3,acarreo);
     (void) incrementaDigito(self->tiempo+DECENA_HORA   ,2,acarreo);
+
+    if (   self->accionAlarma 
+        && self->alarmaActivada 
+        && Reloj_coincideAlarma(&self))
+    {
+        Accion_ejecuta(self->accionAlarma);
+    }
 }
 
 bool Reloj_setTiempo(const TiempoBcd *horaActual)
@@ -70,7 +90,7 @@ bool Reloj_getAlarmaActivada(void)
 
 bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo)
 {
-    (void)tiempo;
+    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i)self->tiempoAlarma[i]=(*tiempo)[i];
     self->alarmaActivada = true;
     return true;
 }
