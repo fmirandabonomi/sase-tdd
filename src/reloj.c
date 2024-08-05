@@ -23,14 +23,20 @@ void Reloj_getTiempo(TiempoBcd *destino)
 
 void Reloj_tick(void)
 {
-    if (self->tiempo[UNIDAD_SEGUNDO] < 9){
         self->tiempo[UNIDAD_SEGUNDO]++;
-    }else{
+    if (self->tiempo[UNIDAD_SEGUNDO] > 9){
         self->tiempo[UNIDAD_SEGUNDO] = 0;
+
         self->tiempo[DECENA_SEGUNDO]++;
-        if (self->tiempo[DECENA_SEGUNDO] == 6){
+        if (self->tiempo[DECENA_SEGUNDO] > 5){
             self->tiempo[DECENA_SEGUNDO] = 0;
+
             self->tiempo[UNIDAD_MINUTO]++;
+            if (self->tiempo[UNIDAD_MINUTO] > 9){
+                self->tiempo[UNIDAD_MINUTO] = 0;
+                
+                self->tiempo[DECENA_MINUTO] ++;
+            }
         }
     }
 }
