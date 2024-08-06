@@ -149,8 +149,10 @@ void Reloj_posponAlarma(unsigned minutos)
     copiaTiempBcd(&self->alarmaPospuesta.tiempo,&self->tiempo);
 
     minutos %= 24*60;
-    self->alarmaPospuesta.tiempo[UNIDAD_MINUTO] += minutos%10; minutos/=10;
-    self->alarmaPospuesta.tiempo[DECENA_MINUTO] += minutos%6; minutos/=6;
+    self->alarmaPospuesta.tiempo[UNIDAD_MINUTO] += minutos%10;
+    minutos/=10;
+    self->alarmaPospuesta.tiempo[DECENA_MINUTO] += minutos%6;
+    minutos/=6;
     self->alarmaPospuesta.tiempo[UNIDAD_HORA] += minutos;
     
     normalizaTiempo(&self->alarmaPospuesta.tiempo);

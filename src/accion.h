@@ -19,7 +19,8 @@ struct Accion{
  * 
  * @param self la accion
  */
-inline void Accion_ejecuta(Accion *self){
+inline void Accion_ejecuta(Accion *self)
+{
     self->vptr_->ejecuta(self);
 }
 
