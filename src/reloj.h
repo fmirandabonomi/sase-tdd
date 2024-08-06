@@ -92,6 +92,6 @@ void Reloj_activaAlarma(void);
  * 
  * @param minutos el tiempo 
  */
-void Reloj_posponAlarma(uint8_t minutos);
+void Reloj_posponAlarma(unsigned minutos);
 
 #endif

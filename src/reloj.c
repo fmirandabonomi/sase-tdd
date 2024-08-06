@@ -127,7 +127,7 @@ void Reloj_activaAlarma(void)
 }
 
 
-void Reloj_posponAlarma(uint8_t minutos)
+void Reloj_posponAlarma(unsigned minutos)
 {
     self->alarmaPospuesta.tiempo = self->tiempo + minutos*60;
     normalizaSegundos(&self->alarmaPospuesta.tiempo);

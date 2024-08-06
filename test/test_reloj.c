@@ -170,6 +170,24 @@ void test_puedePosponerLaAlarma(void)
 
 }
 
+void test_puedePosponerAlSiguienteDia(void)
+{
+    static const TiempoBcd tiempoInicial = {2,3,4,4,0,0};
+    static const TiempoBcd tiempoAlarma = {2,3,4,4,0,1};
+    static const unsigned minutosEspera = 10*60;
+    static const TiempoBcd tiempo2 = {0,9,4,4,0,0};
+
+    Reloj_setTiempo(&tiempoInicial);
+    Reloj_setTiempoAlarma(&tiempoAlarma);
+    avanzaUnSegundo();
+
+    Reloj_posponAlarma(minutosEspera);
+
+    Reloj_setTiempo(&tiempo2);
+    avanzaUnSegundo();    
+    TEST_ASSERT_EQUAL_UINT_MESSAGE(2,AccionAlarma_vecesDisparada(testigoAlarma),"Debe disparar la alarma pospuesta");
+}
+
 void test_aceptaTicksPorSegundoDistintosDeUno(void)
 {
     enum{TICKS_POR_SEGUNDO = 19};
