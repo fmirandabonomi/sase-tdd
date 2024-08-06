@@ -17,7 +17,6 @@ AccionAlarma instancias[ACCION_ALARMA_MAX_INSTANCIAS]={};
 
 static void AccionAlarma_accion(Accion *accion)
 {
-    if(!accion->vptr_) return;
     AccionAlarma *const self = container_of(accion,AccionAlarma,accion);
     self->vecesActivada++;
 }
