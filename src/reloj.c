@@ -58,7 +58,7 @@ static void normalizaDigito(uint8_t *const digito,uint8_t *const siguiente,const
 {
     while(*digito >= pesoSiguiente){
         *digito -= pesoSiguiente;
-        if(siguiente) *siguiente += 1;
+        *siguiente += 1;
     }
 }
 static void normalizaTiempo(TiempoBcd *tiempo)
