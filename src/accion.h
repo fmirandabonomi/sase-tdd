@@ -9,19 +9,19 @@
 
 /**
  * @brief Interfaz abstracta que implementa una acción
- * 
+ *
  */
 typedef struct Accion Accion;
 
-struct Accion{
-    struct Accion_VT{
+struct Accion {
+    struct Accion_VT {
         void (*const ejecuta)(Accion *);
-    }const *vptr_;
+    } const *vptr_;
 };
 
 /**
  * @brief Ejecuta una accion
- * 
+ *
  * @param self la accion
  */
 inline void Accion_ejecuta(Accion *self)
