@@ -72,11 +72,6 @@ void Reloj_desactivaAlarma(void);
 
 void Reloj_activaAlarma(void);
 
-/**
- * @brief Pospone una alarma activada, que volverá a sonar luego de un plazo
- * dado a partir de la hora actual
- * 
- * @param plazo Plazo que se postpone la alarma
- */
-void Reloj_posponerAlarma(const TiempoBcd *plazo);
-#endif // RELOJ_H
+void Reloj_posponAlarma(uint8_t minutos);
+
+#endif

@@ -20,6 +20,7 @@ static void avanzaUnSegundo(void)
 {
     for (int i=0;i<TICKS_POR_SEGUNDO;++i) Reloj_tick();
 }
+
 void test_alInicioHoraNoValida(void)
 {
     TEST_ASSERT_FALSE_MESSAGE(Reloj_getTiempoEsValido(),"TiempoValido debe ser false");
@@ -91,6 +92,7 @@ void test_alarmaIniciaDesactivada(void)
     TEST_ASSERT_FALSE_MESSAGE(Reloj_getAlarmaActivada(),"Al inicio la alarma debe estar desactivada");
 }
 
+
 void test_activaAlarmaAlEstablecerTiempoDeAlarma(void)
 {
     static const TiempoBcd tiempoAlarma = {1,3,0,0,0,1};
@@ -138,22 +140,32 @@ void test_puedeActivarseLaAlarma(void)
     Reloj_activaAlarma();
     avanzaUnSegundo();
     TEST_ASSERT_EQUAL_UINT_MESSAGE(1,AccionAlarma_vecesDisparada(testigoAlarma),"Se puede activar la alarma inactiva");
-
 }
-void test_puedePostponerseLaAlarma(void)
+
+void test_puedePosponerLaAlarma(void)
 {
-    static const TiempoBcd tiempoInicial = {1,3,0,0,0,0};
-    static const TiempoBcd tiempoAlarma = {1,3,0,0,0,1};
-    static const TiempoBcd tiempoSegundo = {1,3,0,1,0,0};
-    static const TiempoBcd tiempoPospuesto = {0,0,0,1,0,0};
+    static const TiempoBcd tiempoInicial = {1,3,4,4,0,0};
+    static const TiempoBcd tiempoAlarma = {1,3,4,4,0,1};
+    static const uint8_t minutosEspera = 16;
+    static const TiempoBcd tiempo2 = {1,4,0,0,0,0};
 
     Reloj_setTiempo(&tiempoInicial);
     Reloj_setTiempoAlarma(&tiempoAlarma);
     avanzaUnSegundo();
-    Reloj_posponerAlarma(&tiempoPospuesto);
-    Reloj_setTiempo(&tiempoSegundo);
     TEST_ASSERT_EQUAL_UINT(1,AccionAlarma_vecesDisparada(testigoAlarma));
+
+    Reloj_posponAlarma(minutosEspera);
+
+    Reloj_setTiempo(&tiempo2);
+    avanzaUnSegundo();    
+    TEST_ASSERT_EQUAL_UINT_MESSAGE(2,AccionAlarma_vecesDisparada(testigoAlarma),"Debe disparar la alarma pospuesta");
+
+    Reloj_setTiempo(&tiempoInicial);
     avanzaUnSegundo();
-    TEST_ASSERT_EQUAL_UINT(2,AccionAlarma_vecesDisparada(testigoAlarma));
+    TEST_ASSERT_EQUAL_UINT_MESSAGE(3,AccionAlarma_vecesDisparada(testigoAlarma),"Alarma original debe permanecer");
+    
+    Reloj_setTiempo(&tiempo2);
+    avanzaUnSegundo();
+    TEST_ASSERT_EQUAL_UINT_MESSAGE(3,AccionAlarma_vecesDisparada(testigoAlarma),"La alarma pospuesta vale una sola vez");
 
 }
