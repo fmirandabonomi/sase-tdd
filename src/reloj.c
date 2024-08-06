@@ -70,9 +70,15 @@ static void normalizaTiempo(TiempoBcd *tiempo)
     normalizaDigito(base + UNIDAD_MINUTO, base + DECENA_MINUTO, 10);
     normalizaDigito(base + DECENA_MINUTO, base + UNIDAD_HORA,   6);
     
-    normalizaDigito(base + DECENA_HORA, NULL,   3);
-    normalizaDigito(base + UNIDAD_HORA, base + DECENA_HORA, base[DECENA_HORA] < 2 ? 10:4);
-    normalizaDigito(base + DECENA_HORA, NULL,   3);
+    normalizaDigito(base + UNIDAD_HORA, base + DECENA_HORA, 10);
+
+    while(   base[DECENA_HORA] > 2 
+          || (base[DECENA_HORA] == 2 && base[UNIDAD_HORA] > 3)){
+        base[UNIDAD_HORA] += 10 - 4;
+        base[DECENA_HORA] -= 3;
+        normalizaDigito(base + UNIDAD_HORA, base + DECENA_HORA, 10);
+    }
+
 }
 static int comparaTiempos(TiempoBcd *a,TiempoBcd *b)
 {
@@ -138,12 +144,14 @@ void Reloj_activaAlarma(void)
 }
 
 
-void Reloj_posponAlarma(uint8_t minutos)
+void Reloj_posponAlarma(unsigned minutos)
 {
     copiaTiempBcd(&self->alarmaPospuesta.tiempo,&self->tiempo);
 
-    self->alarmaPospuesta.tiempo[UNIDAD_MINUTO] += minutos%10;
-    self->alarmaPospuesta.tiempo[DECENA_MINUTO] += minutos/10;
+    minutos %= 24*60;
+    self->alarmaPospuesta.tiempo[UNIDAD_MINUTO] += minutos%10; minutos/=10;
+    self->alarmaPospuesta.tiempo[DECENA_MINUTO] += minutos%6; minutos/=6;
+    self->alarmaPospuesta.tiempo[UNIDAD_HORA] += minutos;
     
     normalizaTiempo(&self->alarmaPospuesta.tiempo);
     
