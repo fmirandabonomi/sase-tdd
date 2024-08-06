@@ -1,4 +1,5 @@
 #include "reloj.h"
+#include <string.h>
 
 static struct Reloj{
     TiempoBcd tiempo;
@@ -48,15 +49,13 @@ static uint8_t incrementaDigito(
     return rebalse;
 }
 
+static int comparaTiempos(TiempoBcd *a,TiempoBcd *b)
+{
+    return memcmp(*a,*b,TiempoBcd_NUM_DIGITOS);
+}
 static bool Reloj_coincideAlarma()
 {
-    bool coincide = true;
-    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i){
-        const uint8_t a = self->tiempo[i];
-        const uint8_t b = self->tiempoAlarma[i];
-        coincide &= (a == b);
-    }
-    return coincide;
+    return !comparaTiempos(&self->tiempo,&self->tiempoAlarma);
 }
 void Reloj_tick(void)
 {
@@ -68,9 +67,9 @@ void Reloj_tick(void)
     acarreo = incrementaDigito(self->tiempo+UNIDAD_HORA   ,self->tiempo[DECENA_HORA] < 2 ? 9:3,acarreo);
     (void) incrementaDigito(self->tiempo+DECENA_HORA   ,2,acarreo);
 
-    if (   self->accionAlarma 
-        && self->alarmaActivada 
-        && Reloj_coincideAlarma(&self))
+    if(!self->alarmaActivada || !self->accionAlarma) return;
+
+    if (Reloj_coincideAlarma(&self))
     {
         Accion_ejecuta(self->accionAlarma);
     }
