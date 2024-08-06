@@ -1,11 +1,28 @@
 #include "reloj.h"
 #include <string.h>
+//#define HACER_LOG
+#ifdef HACER_LOG
+#include <stdio.h>
+#define LOG(s,...) printf(s __VA_OPT__(,) __VA_ARGS__)
+#define LOG_TIEMPO(t)     do{\
+        uint8_t *const base = (t);\
+        LOG("%02d:%02d:%02d",\
+        base[DECENA_HORA]*10+base[UNIDAD_HORA],\
+        base[DECENA_MINUTO]*10+base[UNIDAD_MINUTO],\
+        base[DECENA_SEGUNDO]*10+base[UNIDAD_SEGUNDO]);\
+}while(0)
+#else
+#define LOG(s,...)
+#define LOG_TIEMPO(t)
+#endif
 
 static struct Reloj{
     TiempoBcd tiempo;
     TiempoBcd tiempoAlarma;
+    TiempoBcd tiempoAlarmaPospuesta;
     bool esValido;
     bool alarmaActivada;
+    bool alarmaPospuesta;
     Accion *accionAlarma;
 }self[1];
 
@@ -39,13 +56,12 @@ static uint8_t incrementaDigito(
                         uint8_t const limite,
                         uint8_t const incremento)
 {
-    uint8_t rebalse = 0;
-    if (*digito < limite) {
-        *digito += incremento;
-    }else{
-        *digito = 0;
-        rebalse = 1;
-    }
+    uint8_t const suma = *digito + incremento;
+    uint8_t const pesoSiguiente = limite + 1;
+    uint8_t rebalse = suma >= pesoSiguiente;
+
+    *digito = rebalse ? suma - pesoSiguiente : suma;
+
     return rebalse;
 }
 
@@ -53,9 +69,13 @@ static int comparaTiempos(TiempoBcd *a,TiempoBcd *b)
 {
     return memcmp(*a,*b,TiempoBcd_NUM_DIGITOS);
 }
-static bool Reloj_coincideAlarma()
+static bool Reloj_coincideAlarma(void)
 {
     return !comparaTiempos(&self->tiempo,&self->tiempoAlarma);
+}
+static bool Reloj_coincideAlarmaPospuesta(void)
+{
+    return !comparaTiempos(&self->tiempo,&self->tiempoAlarmaPospuesta);
 }
 void Reloj_tick(void)
 {
@@ -67,17 +87,24 @@ void Reloj_tick(void)
     acarreo = incrementaDigito(self->tiempo+UNIDAD_HORA   ,self->tiempo[DECENA_HORA] < 2 ? 9:3,acarreo);
     (void) incrementaDigito(self->tiempo+DECENA_HORA   ,2,acarreo);
 
-    if(!self->alarmaActivada || !self->accionAlarma) return;
+    if(!self->accionAlarma) return;
 
-    if (Reloj_coincideAlarma(&self))
-    {
+    if (self->alarmaActivada && Reloj_coincideAlarma()){
+        Accion_ejecuta(self->accionAlarma);
+    }else if(self->alarmaPospuesta && Reloj_coincideAlarmaPospuesta()){
+        self->alarmaPospuesta = false;
         Accion_ejecuta(self->accionAlarma);
     }
 }
 
+static void copiaTiempBcd(TiempoBcd *destino,const TiempoBcd *horaActual)
+{
+    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i)(*destino)[i]=(*horaActual)[i];
+}
+
 bool Reloj_setTiempo(const TiempoBcd *horaActual)
 {
-    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i)self->tiempo[i]=(*horaActual)[i];
+    copiaTiempBcd(&self->tiempo,horaActual);
     self->esValido = true;
     return true;
 }
@@ -87,9 +114,9 @@ bool Reloj_getAlarmaActivada(void)
     return self->alarmaActivada;
 }
 
-bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo)
+bool Reloj_setTiempoAlarma(const TiempoBcd *tiempoAlarma)
 {
-    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i)self->tiempoAlarma[i]=(*tiempo)[i];
+    copiaTiempBcd(&self->tiempoAlarma,tiempoAlarma);
     self->alarmaActivada = true;
     return true;
 }
@@ -102,4 +129,21 @@ void Reloj_desactivaAlarma(void)
 void Reloj_activaAlarma(void)
 {
     self->alarmaActivada = true;
+}
+
+
+void Reloj_posponAlarma(uint8_t minutos)
+{
+    uint8_t acarreo;
+    copiaTiempBcd(&self->tiempoAlarmaPospuesta,&self->tiempo);
+
+    acarreo = incrementaDigito(self->tiempoAlarmaPospuesta + UNIDAD_MINUTO,9,minutos%10);
+    acarreo = incrementaDigito(self->tiempoAlarmaPospuesta + DECENA_MINUTO,5,minutos/10+acarreo);
+    acarreo = incrementaDigito(self->tiempoAlarmaPospuesta + UNIDAD_HORA,self->tiempoAlarmaPospuesta[DECENA_HORA] < 2 ? 9:3,acarreo);
+    incrementaDigito(self->tiempoAlarmaPospuesta + DECENA_HORA,2,acarreo);
+    self->alarmaPospuesta = true;
+
+    LOG("Alarma pospuesta para ");
+    LOG_TIEMPO(self->tiempoAlarma);
+    LOG("\n");
 }

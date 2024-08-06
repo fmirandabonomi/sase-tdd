@@ -65,4 +65,6 @@ void Reloj_desactivaAlarma(void);
 
 void Reloj_activaAlarma(void);
 
-#endif // RELOJ_H
+void Reloj_posponAlarma(uint8_t minutos);
+
+#endif
