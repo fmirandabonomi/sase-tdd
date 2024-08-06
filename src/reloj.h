@@ -4,6 +4,12 @@
 #include <stdint.h>
 #include "accion.h"
 
+/**
+ * @addtogroup Reloj
+ * @brief Librería de reloj de 24 horas con alarma
+ * @{
+ */
+
 enum PartesTiempoBcd{
     DECENA_HORA,
     UNIDAD_HORA,
@@ -34,7 +40,7 @@ void Reloj_init(unsigned ticksPorSegundo,Accion *accionAlarma);
  * @retval true El tiempo es válido (el reloj fue puesto en hora)
  * @retval false El tiempo no es válido
  */
-bool Reloj_getTiempoEsValido();
+bool Reloj_getTiempoEsValido(void);
 /**
  * @brief Obtiene el tiempo actual del reloj
  * 
@@ -69,8 +75,8 @@ bool Reloj_getAlarmaActivada(void);
  * @brief Establece la hora de alarma. Activa la alarma
  * 
  * @param tiempo Hora de alarma
- * @return true La alarma fue establecida
- * @return false No se pudo establecer la alarma
+ * @retval true La alarma fue establecida
+ * @retval false No se pudo establecer la alarma
  */
 bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo);
 
@@ -93,5 +99,7 @@ void Reloj_activaAlarma(void);
  * @param minutos el tiempo 
  */
 void Reloj_posponAlarma(unsigned minutos);
+
+/// @}
 
 #endif
