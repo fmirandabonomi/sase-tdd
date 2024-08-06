@@ -10,6 +10,10 @@
  * @{
  */
 
+/**
+ * @brief Constantes con los índices, dentro de un arreglo TiempoBcd, de las partes del tiempo
+ * 
+ */
 enum PartesTiempoBcd{
     DECENA_HORA,
     UNIDAD_HORA,
@@ -32,6 +36,7 @@ typedef uint8_t TiempoBcd[TiempoBcd_NUM_DIGITOS];
  * @brief Inicializa el reloj (instancia única)
  * 
  * @param ticksPorSegundo cantidad de ticks por segundo;
+ * @param accionAlarma Accion que se ejecutará al disparar la alarma
  */
 void Reloj_init(unsigned ticksPorSegundo,Accion *accionAlarma);
 /**

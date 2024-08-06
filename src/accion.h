@@ -2,8 +2,13 @@
 #define ACCION_H
 
 /**
+ * @addtogroup Accion
+ * @brief Implementación de acción o callback orientado a objetos
+ * @{
+ */
+
+/**
  * @brief Interfaz abstracta que implementa una acción
- * (callback orientado a objetos)
  * 
  */
 typedef struct Accion Accion;
@@ -23,5 +28,5 @@ inline void Accion_ejecuta(Accion *self)
 {
     self->vptr_->ejecuta(self);
 }
-
+/// @}
 #endif // ACCION_H
