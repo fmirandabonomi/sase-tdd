@@ -4,7 +4,7 @@
 #include <assert.h>
 
 #ifndef ACCION_ALARMA_MAX_INSTANCIAS
-#define ACCION_ALARMA_MAX_INSTANCIAS 10
+#define ACCION_ALARMA_MAX_INSTANCIAS 1
 #endif
 
 struct AccionAlarma{
