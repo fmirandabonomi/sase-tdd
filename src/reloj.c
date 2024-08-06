@@ -18,13 +18,19 @@
 
 static struct Reloj{
     TiempoBcd tiempo;
-    TiempoBcd tiempoAlarma;
-    TiempoBcd tiempoAlarmaPospuesta;
+    struct Alarma{
+        TiempoBcd tiempo;
+        bool activada;
+    } alarma;
+    struct Alarma alarmaPospuesta;
     bool esValido;
-    bool alarmaActivada;
-    bool alarmaPospuesta;
     Accion *accionAlarma;
 }self[1];
+
+static void copiaTiempBcd(TiempoBcd *destino,const TiempoBcd *horaActual)
+{
+    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i)(*destino)[i]=(*horaActual)[i];
+}
 
 void Reloj_init(unsigned ticksPorSegundo,Accion *accionAlarma)
 {
@@ -39,7 +45,7 @@ bool Reloj_getTiempoEsValido(void)
 
 void Reloj_getTiempo(TiempoBcd *destino)
 {
-    for (int i=0;i<TiempoBcd_NUM_DIGITOS;++i) (*destino)[i]=self->tiempo[i];
+    copiaTiempBcd(destino,&self->tiempo);
 }
 
 
@@ -69,11 +75,11 @@ static int comparaTiempos(TiempoBcd *a,TiempoBcd *b)
 }
 static bool Reloj_coincideAlarma(void)
 {
-    return !comparaTiempos(&self->tiempo,&self->tiempoAlarma);
+    return !comparaTiempos(&self->tiempo,&self->alarma.tiempo);
 }
 static bool Reloj_coincideAlarmaPospuesta(void)
 {
-    return !comparaTiempos(&self->tiempo,&self->tiempoAlarmaPospuesta);
+    return !comparaTiempos(&self->tiempo,&self->alarmaPospuesta.tiempo);
 }
 void Reloj_tick(void)
 {
@@ -82,17 +88,12 @@ void Reloj_tick(void)
 
     if(!self->accionAlarma) return;
 
-    if (self->alarmaActivada && Reloj_coincideAlarma()){
+    if (self->alarma.activada && Reloj_coincideAlarma()){
         Accion_ejecuta(self->accionAlarma);
-    }else if(self->alarmaPospuesta && Reloj_coincideAlarmaPospuesta()){
-        self->alarmaPospuesta = false;
+    }else if(self->alarmaPospuesta.activada && Reloj_coincideAlarmaPospuesta()){
+        self->alarmaPospuesta.activada = false;
         Accion_ejecuta(self->accionAlarma);
     }
-}
-
-static void copiaTiempBcd(TiempoBcd *destino,const TiempoBcd *horaActual)
-{
-    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i)(*destino)[i]=(*horaActual)[i];
 }
 
 bool Reloj_setTiempo(const TiempoBcd *horaActual)
@@ -104,39 +105,39 @@ bool Reloj_setTiempo(const TiempoBcd *horaActual)
 
 bool Reloj_getAlarmaActivada(void)
 {
-    return self->alarmaActivada;
+    return self->alarma.activada;
 }
 
 bool Reloj_setTiempoAlarma(const TiempoBcd *tiempoAlarma)
 {
-    copiaTiempBcd(&self->tiempoAlarma,tiempoAlarma);
-    self->alarmaActivada = true;
+    copiaTiempBcd(&self->alarma.tiempo,tiempoAlarma);
+    self->alarma.activada = true;
     return true;
 }
 
 void Reloj_desactivaAlarma(void)
 {
-    self->alarmaActivada = false;
+    self->alarma.activada = false;
 }
 
 void Reloj_activaAlarma(void)
 {
-    self->alarmaActivada = true;
+    self->alarma.activada = true;
 }
 
 
 void Reloj_posponAlarma(uint8_t minutos)
 {
-    copiaTiempBcd(&self->tiempoAlarmaPospuesta,&self->tiempo);
+    copiaTiempBcd(&self->alarmaPospuesta.tiempo,&self->tiempo);
 
-    self->tiempoAlarmaPospuesta[UNIDAD_MINUTO] += minutos%10;
-    self->tiempoAlarmaPospuesta[DECENA_MINUTO] += minutos/10;
+    self->alarmaPospuesta.tiempo[UNIDAD_MINUTO] += minutos%10;
+    self->alarmaPospuesta.tiempo[DECENA_MINUTO] += minutos/10;
     
-    normalizaTiempo(&self->tiempoAlarmaPospuesta);
+    normalizaTiempo(&self->alarmaPospuesta.tiempo);
     
-    self->alarmaPospuesta = true;
+    self->alarmaPospuesta.activada = true;
 
     LOG("Alarma pospuesta para ");
-    LOG_TIEMPO(self->tiempoAlarma);
+    LOG_TIEMPO(self->alarmaPospuesta.tiempo);
     LOG("\n");
 }
