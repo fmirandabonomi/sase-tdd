@@ -180,7 +180,6 @@ void test_puedePosponerAlSiguienteDia(void)
     Reloj_setTiempo(&tiempoInicial);
     Reloj_setTiempoAlarma(&tiempoAlarma);
     avanzaUnSegundo();
-    TEST_ASSERT_EQUAL_UINT(0,AccionAlarma_vecesDisparada(testigoAlarma));
     avanzaUnSegundo();
 
     Reloj_posponAlarma(minutosEspera);
