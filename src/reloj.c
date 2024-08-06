@@ -42,29 +42,27 @@ void Reloj_getTiempo(TiempoBcd *destino)
     for (int i=0;i<TiempoBcd_NUM_DIGITOS;++i) (*destino)[i]=self->tiempo[i];
 }
 
-/**
- * @brief Incrementa un dígito, is pasa del límite establecido vuelve a cero
- * 
- * @param digito[in,out] Referencia del dígito a incrementar
- * @param limite[in] El límite
- * @param incremento[in] el valor por el cual incrementar
- * @retval 1 si hubo rebalse, el dígito pasó a cero
- * @retval 0 si no hubo rebase
- */
-static uint8_t incrementaDigito(
-                        uint8_t *const digito,
-                        uint8_t const limite,
-                        uint8_t const incremento)
+
+static void normalizaDigito(uint8_t *const digito,uint8_t *const siguiente,const uint8_t pesoSiguiente)
 {
-    uint8_t const suma = *digito + incremento;
-    uint8_t const pesoSiguiente = limite + 1;
-    uint8_t rebalse = suma >= pesoSiguiente;
-
-    *digito = rebalse ? suma - pesoSiguiente : suma;
-
-    return rebalse;
+    while(*digito >= pesoSiguiente){
+        *digito -= pesoSiguiente;
+        if(siguiente) *siguiente += 1;
+    }
 }
+static void normalizaTiempo(TiempoBcd *tiempo)
+{
+    uint8_t *const base = *tiempo;
 
+    normalizaDigito(base + UNIDAD_SEGUNDO,base + DECENA_SEGUNDO,10);
+    normalizaDigito(base + DECENA_SEGUNDO,base + UNIDAD_MINUTO, 6);
+    normalizaDigito(base + UNIDAD_MINUTO, base + DECENA_MINUTO, 10);
+    normalizaDigito(base + DECENA_MINUTO, base + UNIDAD_HORA,   6);
+    
+    normalizaDigito(base + DECENA_HORA, NULL,   3);
+    normalizaDigito(base + UNIDAD_HORA, base + DECENA_HORA, base[DECENA_HORA] < 2 ? 10:4);
+    normalizaDigito(base + DECENA_HORA, NULL,   3);
+}
 static int comparaTiempos(TiempoBcd *a,TiempoBcd *b)
 {
     return memcmp(*a,*b,TiempoBcd_NUM_DIGITOS);
@@ -79,13 +77,8 @@ static bool Reloj_coincideAlarmaPospuesta(void)
 }
 void Reloj_tick(void)
 {
-    uint8_t acarreo;
-    acarreo = incrementaDigito(self->tiempo+UNIDAD_SEGUNDO,9,1);
-    acarreo = incrementaDigito(self->tiempo+DECENA_SEGUNDO,5,acarreo);
-    acarreo = incrementaDigito(self->tiempo+UNIDAD_MINUTO ,9,acarreo);
-    acarreo = incrementaDigito(self->tiempo+DECENA_MINUTO ,5,acarreo);
-    acarreo = incrementaDigito(self->tiempo+UNIDAD_HORA   ,self->tiempo[DECENA_HORA] < 2 ? 9:3,acarreo);
-    (void) incrementaDigito(self->tiempo+DECENA_HORA   ,2,acarreo);
+    self->tiempo[UNIDAD_SEGUNDO]++;
+    normalizaTiempo(&self->tiempo);
 
     if(!self->accionAlarma) return;
 
@@ -134,13 +127,13 @@ void Reloj_activaAlarma(void)
 
 void Reloj_posponAlarma(uint8_t minutos)
 {
-    uint8_t acarreo;
     copiaTiempBcd(&self->tiempoAlarmaPospuesta,&self->tiempo);
 
-    acarreo = incrementaDigito(self->tiempoAlarmaPospuesta + UNIDAD_MINUTO,9,minutos%10);
-    acarreo = incrementaDigito(self->tiempoAlarmaPospuesta + DECENA_MINUTO,5,minutos/10+acarreo);
-    acarreo = incrementaDigito(self->tiempoAlarmaPospuesta + UNIDAD_HORA,self->tiempoAlarmaPospuesta[DECENA_HORA] < 2 ? 9:3,acarreo);
-    incrementaDigito(self->tiempoAlarmaPospuesta + DECENA_HORA,2,acarreo);
+    self->tiempoAlarmaPospuesta[UNIDAD_MINUTO] += minutos%10;
+    self->tiempoAlarmaPospuesta[DECENA_MINUTO] += minutos/10;
+    
+    normalizaTiempo(&self->tiempoAlarmaPospuesta);
+    
     self->alarmaPospuesta = true;
 
     LOG("Alarma pospuesta para ");
