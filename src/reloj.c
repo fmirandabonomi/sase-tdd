@@ -31,11 +31,21 @@ static void tiempoASegundos(unsigned *destino,const TiempoBcd *horaActual)
 }
 static void segundosATiempo(TiempoBcd *destino,unsigned origen)
 {
-    (*destino)[UNIDAD_SEGUNDO] = origen % 10; origen /= 10;
-    (*destino)[DECENA_SEGUNDO] = origen % 6;  origen /= 6;
-    (*destino)[UNIDAD_MINUTO] = origen % 10;  origen /= 10;
-    (*destino)[DECENA_MINUTO] = origen % 6;   origen /= 6;
-    (*destino)[UNIDAD_HORA] = origen % 10;    origen /= 10;
+    (*destino)[UNIDAD_SEGUNDO] = origen % 10;
+    origen /= 10;
+
+    (*destino)[DECENA_SEGUNDO] = origen % 6;
+    origen /= 6;
+
+    (*destino)[UNIDAD_MINUTO] = origen % 10;
+    origen /= 10;
+
+    (*destino)[DECENA_MINUTO] = origen % 6;
+    origen /= 6;
+
+    (*destino)[UNIDAD_HORA] = origen % 10;
+    origen /= 10;
+    
     (*destino)[DECENA_HORA] = origen % 10;
 }
 
