@@ -169,3 +169,20 @@ void test_puedePosponerLaAlarma(void)
     TEST_ASSERT_EQUAL_UINT_MESSAGE(3,AccionAlarma_vecesDisparada(testigoAlarma),"La alarma pospuesta vale una sola vez");
 
 }
+
+void test_aceptaTicksPorSegundoDistintosDeUno(void)
+{
+    enum{TICKS_POR_SEGUNDO = 19};
+    static const TiempoBcd tiempoInicial = {1,3,0,0,0,0};
+    static const TiempoBcd tiempoFinal = {1,3,0,0,0,1};
+    TiempoBcd tiempo;
+    Reloj_init(TICKS_POR_SEGUNDO,NULL);
+    Reloj_setTiempo(&tiempoInicial);
+    for(int i=0;i<(TICKS_POR_SEGUNDO-1);++i) Reloj_tick();
+    Reloj_getTiempo(&tiempo);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(tiempoInicial,tiempo,TiempoBcd_NUM_DIGITOS,"Solo debe avanzar luego de transcurridos los ticks prescritos");
+    Reloj_tick();
+    Reloj_getTiempo(&tiempo);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(tiempoFinal,tiempo,TiempoBcd_NUM_DIGITOS,"Luego de transcurridos los ticks prescritos debe avanzar");
+}
+

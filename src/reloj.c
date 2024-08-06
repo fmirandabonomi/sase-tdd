@@ -24,6 +24,10 @@ static struct Reloj{
     } alarma;
     struct Alarma alarmaPospuesta;
     bool esValido;
+    struct Prescaler{
+        unsigned limite;
+        unsigned cuenta;
+    }prescaler;
     Accion *accionAlarma;
 }self[1];
 
@@ -34,7 +38,8 @@ static void copiaTiempBcd(TiempoBcd *destino,const TiempoBcd *horaActual)
 
 void Reloj_init(unsigned ticksPorSegundo,Accion *accionAlarma)
 {
-    (void) ticksPorSegundo;
+    self->prescaler.limite = ticksPorSegundo - 1;
+    self->prescaler.cuenta = 0;
     self->accionAlarma = accionAlarma;
 }
 
@@ -84,6 +89,12 @@ static bool Reloj_coincideAlarmaPospuesta(void)
 
 void Reloj_tick(void)
 {
+    if(self->prescaler.cuenta < self->prescaler.limite){
+        self->prescaler.cuenta++;
+        return;
+    }
+    self->prescaler.cuenta = 0;
+    
     self->tiempo[UNIDAD_SEGUNDO]++;
     normalizaTiempo(&self->tiempo);
 
