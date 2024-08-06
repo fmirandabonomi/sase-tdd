@@ -14,6 +14,12 @@ enum PartesTiempoBcd{
     TiempoBcd_NUM_DIGITOS
 };
 
+/**
+ * @brief Arreglo con los dígitos BCD correspondientes a hora, minutos y segundos
+ * para un tiempo de 24 horas. Ejemplo de literal compuesto: (TiempoBcd){decenaHora, unidadHora, decenaMinuto, unidadMinuto, decenaSegundo, unidadSegundo}
+ * @note Las constantes de la forma (DECENA|UNIDAD)_(HORA|MINUTO|SEGUNDO)
+ * contienen los índices en el arreglo para las respectivas partes del tiempo.
+ */
 typedef uint8_t TiempoBcd[TiempoBcd_NUM_DIGITOS];
 
 /**
@@ -68,10 +74,24 @@ bool Reloj_getAlarmaActivada(void);
  */
 bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo);
 
+/**
+ * @brief Desactiva la alarma
+ * 
+ */
 void Reloj_desactivaAlarma(void);
 
+/**
+ * @brief Activa la alarma
+ * 
+ */
 void Reloj_activaAlarma(void);
 
+/**
+ * @brief Pospone la alarma, establece una alarma de una sola vez
+ * luego del tiempo especificado a partir de la hora actual
+ * 
+ * @param minutos el tiempo 
+ */
 void Reloj_posponAlarma(uint8_t minutos);
 
 #endif
