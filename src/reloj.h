@@ -59,10 +59,24 @@ bool Reloj_setTiempo(const TiempoBcd *horaActual);
  */
 bool Reloj_getAlarmaActivada(void);
 
+/**
+ * @brief Establece la hora de alarma. Activa la alarma
+ * 
+ * @param tiempo Hora de alarma
+ * @return true La alarma fue establecida
+ * @return false No se pudo establecer la alarma
+ */
 bool Reloj_setTiempoAlarma(const TiempoBcd *tiempo);
 
 void Reloj_desactivaAlarma(void);
 
 void Reloj_activaAlarma(void);
 
+/**
+ * @brief Pospone una alarma activada, que volverá a sonar luego de un plazo
+ * dado a partir de la hora actual
+ * 
+ * @param plazo Plazo que se postpone la alarma
+ */
+void Reloj_posponerAlarma(const TiempoBcd *plazo);
 #endif // RELOJ_H

@@ -140,3 +140,20 @@ void test_puedeActivarseLaAlarma(void)
     TEST_ASSERT_EQUAL_UINT_MESSAGE(1,AccionAlarma_vecesDisparada(testigoAlarma),"Se puede activar la alarma inactiva");
 
 }
+void test_puedePostponerseLaAlarma(void)
+{
+    static const TiempoBcd tiempoInicial = {1,3,0,0,0,0};
+    static const TiempoBcd tiempoAlarma = {1,3,0,0,0,1};
+    static const TiempoBcd tiempoSegundo = {1,3,0,1,0,0};
+    static const TiempoBcd tiempoPospuesto = {0,0,0,1,0,0};
+
+    Reloj_setTiempo(&tiempoInicial);
+    Reloj_setTiempoAlarma(&tiempoAlarma);
+    avanzaUnSegundo();
+    Reloj_posponerAlarma(&tiempoPospuesto);
+    Reloj_setTiempo(&tiempoSegundo);
+    TEST_ASSERT_EQUAL_UINT(1,AccionAlarma_vecesDisparada(testigoAlarma));
+    avanzaUnSegundo();
+    TEST_ASSERT_EQUAL_UINT(2,AccionAlarma_vecesDisparada(testigoAlarma));
+
+}
