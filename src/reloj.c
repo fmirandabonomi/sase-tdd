@@ -4,22 +4,14 @@
 #ifdef HACER_LOG
 #include <stdio.h>
 #define LOG(s,...) printf(s __VA_OPT__(,) __VA_ARGS__)
-#define LOG_TIEMPO(t)     do{\
-        uint8_t *const base = (t);\
-        LOG("%02d:%02d:%02d",\
-        base[DECENA_HORA]*10+base[UNIDAD_HORA],\
-        base[DECENA_MINUTO]*10+base[UNIDAD_MINUTO],\
-        base[DECENA_SEGUNDO]*10+base[UNIDAD_SEGUNDO]);\
-}while(0)
 #else
 #define LOG(s,...)
-#define LOG_TIEMPO(t)
 #endif
 
 static struct Reloj{
-    TiempoBcd tiempo;
+    unsigned tiempo;
     struct Alarma{
-        TiempoBcd tiempo;
+        unsigned tiempo;
         bool activada;
     } alarma;
     struct Alarma alarmaPospuesta;
@@ -31,9 +23,20 @@ static struct Reloj{
     Accion *accionAlarma;
 }self[1];
 
-static void copiaTiempBcd(TiempoBcd *destino,const TiempoBcd *horaActual)
+static void tiempoASegundos(unsigned *destino,const TiempoBcd *horaActual)
 {
-    for(int i=0;i<TiempoBcd_NUM_DIGITOS;++i)(*destino)[i]=(*horaActual)[i];
+    *destino =  ((*horaActual)[UNIDAD_SEGUNDO] + (*horaActual)[DECENA_SEGUNDO] * 10)
+              + ((*horaActual)[UNIDAD_MINUTO] + (*horaActual)[DECENA_MINUTO] * 10) * 60
+              + ((*horaActual)[UNIDAD_HORA] + (*horaActual)[DECENA_HORA] * 10) * 3600;
+}
+static void segundosATiempo(TiempoBcd *destino,unsigned origen)
+{
+    (*destino)[UNIDAD_SEGUNDO] = origen % 10; origen /= 10;
+    (*destino)[DECENA_SEGUNDO] = origen % 6;  origen /= 6;
+    (*destino)[UNIDAD_MINUTO] = origen % 10;  origen /= 10;
+    (*destino)[DECENA_MINUTO] = origen % 6;   origen /= 6;
+    (*destino)[UNIDAD_HORA] = origen % 10;    origen /= 10;
+    (*destino)[DECENA_HORA] = origen % 10;
 }
 
 void Reloj_init(unsigned ticksPorSegundo,Accion *accionAlarma)
@@ -50,41 +53,27 @@ bool Reloj_getTiempoEsValido(void)
 
 void Reloj_getTiempo(TiempoBcd *destino)
 {
-    copiaTiempBcd(destino,&self->tiempo);
+    segundosATiempo(destino,self->tiempo);
 }
 
 
-static void normalizaDigito(uint8_t *const digito,uint8_t *const siguiente,const uint8_t pesoSiguiente)
+static void normalizaSegundos(unsigned *tiempo)
 {
-    while(*digito >= pesoSiguiente){
-        *digito -= pesoSiguiente;
-        if(siguiente) *siguiente += 1;
-    }
+    *tiempo %= 24*3600;
 }
-static void normalizaTiempo(TiempoBcd *tiempo)
+static int comparaSegundos(const unsigned *a,const unsigned *b)
 {
-    uint8_t *const base = *tiempo;
-
-    normalizaDigito(base + UNIDAD_SEGUNDO,base + DECENA_SEGUNDO,10);
-    normalizaDigito(base + DECENA_SEGUNDO,base + UNIDAD_MINUTO, 6);
-    normalizaDigito(base + UNIDAD_MINUTO, base + DECENA_MINUTO, 10);
-    normalizaDigito(base + DECENA_MINUTO, base + UNIDAD_HORA,   6);
-    
-    normalizaDigito(base + DECENA_HORA, NULL,   3);
-    normalizaDigito(base + UNIDAD_HORA, base + DECENA_HORA, base[DECENA_HORA] < 2 ? 10:4);
-    normalizaDigito(base + DECENA_HORA, NULL,   3);
-}
-static int comparaTiempos(TiempoBcd *a,TiempoBcd *b)
-{
-    return memcmp(*a,*b,TiempoBcd_NUM_DIGITOS);
+    return (*a == *b)?  0:
+           (*a >  *b)?  1:
+                       -1;
 }
 static bool Reloj_coincideAlarma(void)
 {
-    return !comparaTiempos(&self->tiempo,&self->alarma.tiempo);
+    return !comparaSegundos(&self->tiempo,&self->alarma.tiempo);
 }
 static bool Reloj_coincideAlarmaPospuesta(void)
 {
-    return !comparaTiempos(&self->tiempo,&self->alarmaPospuesta.tiempo);
+    return !comparaSegundos(&self->tiempo,&self->alarmaPospuesta.tiempo);
 }
 
 void Reloj_tick(void)
@@ -95,8 +84,8 @@ void Reloj_tick(void)
     }
     self->prescaler.cuenta = 0;
     
-    self->tiempo[UNIDAD_SEGUNDO]++;
-    normalizaTiempo(&self->tiempo);
+    self->tiempo++;
+    normalizaSegundos(&self->tiempo);
 
     if(!self->accionAlarma) return;
 
@@ -110,7 +99,7 @@ void Reloj_tick(void)
 
 bool Reloj_setTiempo(const TiempoBcd *horaActual)
 {
-    copiaTiempBcd(&self->tiempo,horaActual);
+    tiempoASegundos(&self->tiempo,horaActual);
     self->esValido = true;
     return true;
 }
@@ -122,7 +111,7 @@ bool Reloj_getAlarmaActivada(void)
 
 bool Reloj_setTiempoAlarma(const TiempoBcd *tiempoAlarma)
 {
-    copiaTiempBcd(&self->alarma.tiempo,tiempoAlarma);
+    tiempoASegundos(&self->alarma.tiempo,tiempoAlarma);
     self->alarma.activada = true;
     return true;
 }
@@ -140,17 +129,7 @@ void Reloj_activaAlarma(void)
 
 void Reloj_posponAlarma(uint8_t minutos)
 {
-    copiaTiempBcd(&self->alarmaPospuesta.tiempo,&self->tiempo);
-
-    self->alarmaPospuesta.tiempo[UNIDAD_MINUTO] += minutos%10;
-    self->alarmaPospuesta.tiempo[DECENA_MINUTO] += minutos/10;
-    
-    normalizaTiempo(&self->alarmaPospuesta.tiempo);
-    
+    self->alarmaPospuesta.tiempo = self->tiempo + minutos*60;
+    normalizaSegundos(&self->alarmaPospuesta.tiempo);
     self->alarmaPospuesta.activada = true;
-
-    LOG("Alarma pospuesta para ");
-    LOG_TIEMPO(self->alarmaPospuesta.tiempo);
-    LOG("\n");
-
 }
